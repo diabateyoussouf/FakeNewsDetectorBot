@@ -1,0 +1,30 @@
+services:
+  # PREMIER - Service Python
+  mcp-python-service:
+    build: ./mcp-python-module
+    ports:
+      - "8090:8090"
+    restart: unless-stopped
+
+  # DEUXIÈME - MCP Module
+  mcp-module:
+    build: ./mcp-module
+    ports:
+      - "8089:8089"
+    depends_on:
+      - mcp-python-service
+    restart: unless-stopped
+
+  # TROISIÈME - FakeNewsBot
+  fakenewbot:
+    build: ./fakenewBot
+    ports:
+      - "8088:8088"
+    depends_on:
+      - mcp-python-service
+      - mcp-module
+    environment:
+      - SPRING_AI_MISTRALAI_API_KEY=${mistral_key}
+      - TELEGRAM_API_KEY=${telegram_key}
+      - SPRING_AI_MCP_CLIENT_STREAMABLE_HTTP_CONNECTIONS_MCPRH_URL=http://mcp-module:8089/mcp
+    restart: unless-stopped
